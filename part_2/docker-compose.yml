@@ -1,0 +1,23 @@
+services:
+  airflow:
+    build: .
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=SequentialExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=sqlite:////opt/airflow/airflow.db
+      - AIRFLOW__CORE__LOAD_EXAMPLES=false
+      - AIRFLOW__CORE__DAGS_FOLDER=/opt/airflow/dags
+      - JAVA_HOME=/usr/lib/jvm/default-java
+      - SPARK_HOME=/opt/spark
+    volumes:
+      - ./airflow_home/dags:/opt/airflow/dags
+      - ./datalake:/opt/shared
+      - ./airflow_home/logs:/opt/airflow/logs
+    ports:
+      - "8080:8080"
+      - "4040:4040"  # Spark UI
+    command: >
+      bash -c "
+      airflow db migrate &&
+      airflow users create --username admin --password admin123 --firstname Admin --lastname User --role Admin --email admin@example.com || true &&
+      airflow standalone
+      "
